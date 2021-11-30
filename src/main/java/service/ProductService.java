@@ -9,15 +9,11 @@ import java.util.ArrayList;
 
 public interface ProductService {
 
-    @POST("products")
-    Call<ArrayList<Product>>createProducts(@Body ArrayList<Product> productList);
-
     @GET("products")
-    Call<ArrayList<Product>> getProducts(ArrayList productList);
+    Call<ArrayList<Product>> getProducts();
 
     @PUT("products")
-    Call<ArrayList<Product>>updateProducts(@Body ArrayList<Product> productList);
-
+    Call<Product>updateProduct(@Body Product product);
 
 
     @POST("products")
@@ -25,7 +21,6 @@ public interface ProductService {
 
     @GET("products/{id}")
     Call<Product> getProduct(@Path("id") Integer id);
-
 
 
     @DELETE("products/{id}")
