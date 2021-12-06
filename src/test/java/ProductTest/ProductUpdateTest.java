@@ -7,7 +7,9 @@ import okhttp3.ResponseBody;
 import org.junit.jupiter.api.*;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import ru.annachemic.db.dao.ProductsMapper;
 import service.ProductService;
+import utils.DbUtils;
 import utils.PrettyLogger;
 import utils.RetrofitUtils;
 
@@ -18,6 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class ProductUpdateTest {
+    static ProductsMapper productsMapper;
     static Retrofit client;
     static ProductService productService;
     private static Integer productId;
@@ -29,7 +32,7 @@ public class ProductUpdateTest {
     static void beforeAll() {
         client = RetrofitUtils.getRetrofit();
         productService = client.create(ProductService.class);
-
+        productsMapper = DbUtils.getProductsMapper();
     }
 
     @BeforeEach
@@ -59,7 +62,13 @@ public class ProductUpdateTest {
                 .withPrice((int) ((Math.random() + 1) * 100))
                 .withCategoryTitle(CategoryType.FOOD.getTitle());
 
+        Integer countProductsBefore = DbUtils.countProducts(productsMapper);
+
         Response<Product> response = productService.updateProduct(product1).execute();
+
+        Integer countProductsAfter = DbUtils.countProducts(productsMapper);
+
+        assertThat(countProductsAfter, equalTo(countProductsBefore));
 
         PrettyLogger.DEFAULT.log(response.body().toString());
 

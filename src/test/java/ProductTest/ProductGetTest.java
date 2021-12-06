@@ -7,8 +7,10 @@ import okhttp3.ResponseBody;
 import org.junit.jupiter.api.*;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import ru.annachemic.db.dao.ProductsMapper;
 import service.CategoryService;
 import service.ProductService;
+import utils.DbUtils;
 import utils.PrettyLogger;
 import utils.RetrofitUtils;
 
@@ -24,11 +26,13 @@ public class ProductGetTest {
     private static Integer productId;
     static Faker faker = new Faker();
     static Product product;
+    static ProductsMapper productsMapper;
 
     @BeforeAll
     static void beforeAll() {
         client = RetrofitUtils.getRetrofit();
         productService = client.create(ProductService.class);
+        productsMapper = DbUtils.getProductsMapper();
     }
 
     @BeforeEach
@@ -71,8 +75,12 @@ public class ProductGetTest {
 
     @AfterAll
     static void tearDown() throws IOException {
-        Response<ResponseBody> response = productService.deleteProduct(productId).execute();
-        assertThat(response.isSuccessful(), is(true));
+
+        DbUtils.deleteDbProduct(productsMapper);
+
+        Integer countProductsAfter = DbUtils.countProducts(productsMapper);
+
+        assertThat(countProductsAfter, equalTo(0));
     }
 
 }

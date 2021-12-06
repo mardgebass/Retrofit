@@ -8,7 +8,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import dto.Product;
 import enums.CategoryType;
+import ru.annachemic.db.dao.ProductsMapper;
 import service.ProductService;
+import utils.DbUtils;
 import utils.PrettyLogger;
 import utils.RetrofitUtils;
 
@@ -18,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class ProductPostTest {
+    static ProductsMapper productsMapper;
     static Retrofit client;
     static ProductService productService;
     private static Integer productId;
@@ -28,19 +31,29 @@ public class ProductPostTest {
     static void beforeAll() {
         client = RetrofitUtils.getRetrofit();
         productService = client.create(ProductService.class);
+        productsMapper = DbUtils.getProductsMapper();
+    }
+
+    @BeforeEach
+    void setUp() {
+        product = new Product()
+                .withTitle(faker.food().dish())
+                .withPrice((int) ((Math.random() + 1) * 100))
+                .withCategoryTitle(CategoryType.FOOD.getTitle());
     }
 
     @Test
     void postProductTest() throws IOException {
 
-        product = new Product().withTitle(faker.funnyName().name())
-                .withPrice((int) ((Math.random() + 1) * 100))
-                .withCategoryTitle(CategoryType.FURNITURE.getTitle());
+        Integer countProductsBefore = DbUtils.countProducts(productsMapper);
 
         Response<Product> response = productService.createProduct(product).execute();
 
+        Integer countProductsAfter = DbUtils.countProducts(productsMapper);
+
         PrettyLogger.DEFAULT.log(response.body().toString());
 
+        assertThat(countProductsAfter, equalTo(countProductsBefore+1));
         assertThat(response.body().getTitle(), equalTo(product.getTitle()));
         assertThat(response.body().getPrice(), equalTo(product.getPrice()));
         assertThat(response.body().getCategoryTitle(), equalTo(product.getCategoryTitle()));
@@ -48,22 +61,23 @@ public class ProductPostTest {
         productId = response.body().getId();
     }
 
+    @Test
+    void postDbProductTest() {
 
-    @AfterEach
-    void getProductTest() throws IOException {
-        Response<Product> response = productService.getProduct(productId).execute();
+        Integer countProductsBefore = DbUtils.countProducts(productsMapper);
 
-        PrettyLogger.DEFAULT.log(response.body().toString());
+        DbUtils.createNewProduct(productsMapper);
 
-        assertThat(response.body().getTitle(), equalTo(product.getTitle()));
-        assertThat(response.body().getPrice(), equalTo(product.getPrice()));
-        assertThat(response.body().getCategoryTitle(), equalTo(product.getCategoryTitle()));
+        Integer countProductsAfter = DbUtils.countProducts(productsMapper);
+
+        assertThat(countProductsAfter, equalTo(countProductsBefore+1));
+
     }
 
-    @AfterAll
-    static void tearDown() throws IOException {
+
+    @AfterEach
+    void tearDown() throws IOException {
         Response<ResponseBody> response = productService.deleteProduct(productId).execute();
         assertThat(response.isSuccessful(), is(true));
     }
-
 }
