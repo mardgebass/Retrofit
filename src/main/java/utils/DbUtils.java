@@ -56,11 +56,6 @@ public class DbUtils {
         productsMapper.insert(newProduct);
     }
 
-    public static int deleteDbProduct(ProductsMapper productsMapper) {
-        long id = productsMapper.deleteByExample(new ProductsExample());
-        return Math.toIntExact(id);
-    }
-
     public static Integer countCategories(CategoriesMapper categoriesMapper) {
         long categoriesCount = categoriesMapper.countByExample(new CategoriesExample());
         return Math.toIntExact(categoriesCount);

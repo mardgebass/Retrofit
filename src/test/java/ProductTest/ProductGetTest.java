@@ -75,12 +75,8 @@ public class ProductGetTest {
 
     @AfterAll
     static void tearDown() throws IOException {
-
-        DbUtils.deleteDbProduct(productsMapper);
-
-        Integer countProductsAfter = DbUtils.countProducts(productsMapper);
-
-        assertThat(countProductsAfter, equalTo(0));
+        Response<ResponseBody> response = productService.deleteProduct(productId).execute();
+        assertThat(response.isSuccessful(), is(true));
     }
 
 }
